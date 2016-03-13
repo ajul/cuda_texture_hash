@@ -18,39 +18,90 @@ by Ares Lagae and Philip Dutré.
 }
 """
 
+import fractions
 import numpy
-
-output_filename = 'hash.h'
 
 # List of primes. We don't need too many:
 # we want to keep the permutation tables small.
 # Also ignore small primes since they have less effect per operation.
-primes = [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61,
+_primes = [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61,
           67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127,
           131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191,
           193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257]
 
+_permutationVariableName = '_permutation'
+
 # Choose the least set of consecutive primes such that
 # the ratio between the least and greatest is less than a threshold.
-def selectPrimes(count, maximumRatio):
-    for primeIndex in range(len(primes) - count):
-        least = primes[primeIndex]
-        greatest = primes[primeIndex + count - 1]
-        if greatest / least < maximumRatio: 
-            return primes[primeIndex:(primeIndex+count)]
+def selectFactors(outputRange, count, maximumRatio):
+    for primeIndex in range(len(_primes) - count):
+        least = _primes[primeIndex]
+        greatest = _primes[primeIndex + count - 1]
+        result = _primes[primeIndex:(primeIndex+count)]
+        if greatest / least < maximumRatio and not any(
+            fractions.gcd(outputRange, x) > 1 for x in result):
+            result.append(outputRange)
+            result.sort()
+            return result
     raise ValueError("No set of primes within range.")
 
-def generateHeader(count, maximumRatio):
-    permutations = [numpy.random.permutation(prime) for prime in
-                    selectPrimes(count, maximumRatio)]
+def generateHashTerm(offset, factor, argi):
+    offsetAddString = ''
+    if offset > 0: offsetAddString = '%d + ' % offset   
+    
+    if argi == 0:
+        moduloTerm = '(arg0 %% %d)' % factor
+    else:
+        moduloTerm = '((%s + arg%d) %% %d)' % (
+            generateHashTerm(offset, factor, argi - 1),
+            argi,
+            factor)
+
+    return '%s%d[%s%s]' % (
+        _permutationVariableName,
+        factor,
+        offsetAddString,
+        moduloTerm)
+
+def generateHashFunction(outputRange, argc, factors):
+    result = 'unsigned int long_period_hash('
+    result += ', '.join('unsigned int arg%d' % i for i in range(argc))
+    result += '){\n'
+    result += 'unsigned int result = 0;\n'
+    result += '\n'
+
+    offset = 0
+    
+    for factorIndex, factor in enumerate(factors):
+        result += 'result = result + %s;\n' % generateHashTerm(offset, factor, argc - 1)
+        offset += factor
+    
+    result += '\n'
+    
+    result += 'return (result %% %d);\n' % outputRange
+    result += '}\n'
+    return result
+
+def generateHeader(outputRange, count, maximumRatio):
+    factors = selectFactors(outputRange, count, maximumRatio)
+    permutations = [numpy.random.permutation(factor) for factor in
+                    factors]
     result = ''
+
+    # constant section
     for permutation in permutations:
-        result += '__constant__ unsigned int permutation%d[%d] = {' % (
+        result += '__constant__ unsigned int %s%d[%d] = {' % (
+            _permutationVariableName,
             len(permutation),
             len(permutation))
         result += ', '.join(str(x) for x in permutation)
         result += '};\n'
 
+    result += '\n'
+
+    # FIXME
+    result += generateHashFunction(outputRange, 2, factors)
+
     return result
 
-print(generateHeader(5, 2.2))
+print(generateHeader(16, 4, 2.2))
