@@ -33,21 +33,22 @@ _permutationVariableName = '_permutation'
 
 # Choose the least set of consecutive primes such that
 # the ratio between the least and greatest is less than a threshold.
-def selectFactors(outputRange, count, maximumRatio):
-    for primeIndex in range(len(_primes) - count):
-        least = _primes[primeIndex]
-        greatest = _primes[primeIndex + count - 1]
-        result = _primes[primeIndex:(primeIndex+count)]
-        if greatest / least < maximumRatio and not any(
-            fractions.gcd(outputRange, x) > 1 for x in result):
+# TODO: Change this to select (relative?) primes near outputRange.
+def selectFactors(outputRange, factorCount, maximumRatio):
+    filteredPrimes = [x for x in _primes if fractions.gcd(outputRange, x) == 1]
+    for primeIndex in range(len(filteredPrimes) - factorCount):
+        least = filteredPrimes[primeIndex]
+        greatest = filteredPrimes[primeIndex + factorCount - 1]
+        result = filteredPrimes[primeIndex:(primeIndex+factorCount)]
+        if greatest / least < maximumRatio:
             result.append(outputRange)
             result.sort()
             return result
     raise ValueError("No set of primes within range.")
 
 def generateHashTerm(offset, factor, argi):
-    offsetAddString = ''
-    if offset > 0: offsetAddString = '%d + ' % offset   
+    if offset > 0: offsetAddString = '%3d + ' % offset
+    else: offsetAddString = ' ' * 6
     
     if argi == 0:
         moduloTerm = '(arg0 %% %d)' % factor
@@ -67,23 +68,25 @@ def generateHashFunction(outputRange, argc, factors):
     result = 'unsigned int long_period_hash('
     result += ', '.join('unsigned int arg%d' % i for i in range(argc))
     result += '){\n'
-    result += 'unsigned int result = 0;\n'
+    result += '    unsigned int result = 0;\n'
     result += '\n'
 
     offset = 0
     
     for factorIndex, factor in enumerate(factors):
-        result += 'result = result + %s;\n' % generateHashTerm(offset, factor, argc - 1)
+        result += '    result = result + %s;\n' % generateHashTerm(offset, factor, argc - 1)
         offset += factor
     
     result += '\n'
     
-    result += 'return (result %% %d);\n' % outputRange
+    result += '    return (result %% %d);\n' % outputRange
     result += '}\n'
+
+    result += '\n'
     return result
 
-def generateHeader(outputRange, count, maximumRatio):
-    factors = selectFactors(outputRange, count, maximumRatio)
+def generateHeader(outputRange, maxArgc, factorCount = 4, maximumRatio = 2.2):
+    factors = selectFactors(outputRange, factorCount, maximumRatio)
     permutations = [numpy.random.permutation(factor) for factor in
                     factors]
     result = ''
@@ -99,9 +102,9 @@ def generateHeader(outputRange, count, maximumRatio):
 
     result += '\n'
 
-    # FIXME
-    result += generateHashFunction(outputRange, 2, factors)
+    for argc in range(1, maxArgc+1):
+        result += generateHashFunction(outputRange, argc, factors)
 
     return result
 
-print(generateHeader(16, 4, 2.2))
+print(generateHeader(16, 4))
