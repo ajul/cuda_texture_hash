@@ -2,6 +2,9 @@
 Based on Long-Period Hash Functions For Procedural Texturing
 by Ares Lagae and Philip Dutré.
 
+Make sure to compile no_extern_c=True, as the hash functions are overloaded
+in the number of arguments.
+
 @inproceedings{LD2006LHFFPT,
   author    = { Lagae, Ares and Dutr\'e, Philip },
   title     = { Long-Period Hash Functions For Procedural Texturing },
@@ -19,6 +22,7 @@ by Ares Lagae and Philip Dutré.
 """
 
 import fractions
+import math
 import numpy
 
 # List of primes. We don't need too many:
@@ -91,7 +95,10 @@ def generateHashFunction(outputRange, argc, factors):
     result += '\n'
     return result
 
-def generateHeader(outputRange, maxArgc, factorCount = 4):
+def generateHeader(outputRange, maxArgc, factorCount = None):
+    if factorCount is None:
+        # default: make period enough to cover a ~short
+        factorCount = math.ceil(16 / numpy.log2(outputRange))
     factors = selectFactors(outputRange, factorCount)
     permutations = [numpy.random.permutation(factor) for factor in
                     factors]
@@ -112,4 +119,3 @@ def generateHeader(outputRange, maxArgc, factorCount = 4):
         result += generateHashFunction(outputRange, argc, factors)
 
     return result
-
