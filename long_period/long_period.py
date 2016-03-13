@@ -43,6 +43,7 @@ _primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61,
 
 _permutationVariableName = '_permutation'
 
+# Select factorCount prime factors near outputRange.
 def selectFactors(outputRange, factorCount):
     aboveCount = factorCount // 2
     belowCount = factorCount - aboveCount
@@ -56,6 +57,7 @@ def selectFactors(outputRange, factorCount):
                     [outputRange] +
                     _primes[primeIndex:(primeIndex+aboveCount)])
 
+# Recursive generation of a term in the hash sum.
 def generateHashTerm(offset, factor, argi):
     if offset > 0: offsetAddString = '%3d + ' % offset
     else: offsetAddString = ' ' * 6
@@ -74,6 +76,7 @@ def generateHashTerm(offset, factor, argi):
         offsetAddString,
         moduloTerm)
 
+# Produces a hash function for a given number of input unsigned ints.
 def generateHashFunction(outputRange, argc, factors):
     result = '__device__ unsigned int long_period_hash('
     result += ', '.join('unsigned int arg%d' % i for i in range(argc))
@@ -95,7 +98,9 @@ def generateHashFunction(outputRange, argc, factors):
     result += '\n'
     return result
 
-def generateHeader(outputRange, maxArgc, factorCount = None):
+# Generates a header including permutation tables and hash functions
+# for argument counts up to maxArgc.
+def generateHeader(outputRange, maxArgc = 8, factorCount = None):
     if factorCount is None:
         # default: make period enough to cover a ~short
         factorCount = math.ceil(16 / numpy.log2(outputRange))
