@@ -39,7 +39,11 @@ __global__ void test_color(float4* result, unsigned int resolution) {
 }
 """
 
-mod = SourceModule(header + body, no_extern_c=True)
+source = header + body
+
+print(source)
+
+mod = SourceModule(source, no_extern_c=True)
 
 resultGreyscale = np.zeros((resolution, resolution, 4), dtype=np.float32)
 resultColor = np.zeros((resolution, resolution, 4), dtype=np.float32)
