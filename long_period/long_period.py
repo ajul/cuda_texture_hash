@@ -65,7 +65,7 @@ def generateHashTerm(offset, factor, argi):
         moduloTerm)
 
 def generateHashFunction(outputRange, argc, factors):
-    result = 'unsigned int long_period_hash('
+    result = '__device__ unsigned int long_period_hash('
     result += ', '.join('unsigned int arg%d' % i for i in range(argc))
     result += '){\n'
     result += '    unsigned int result = 0;\n'
@@ -106,5 +106,3 @@ def generateHeader(outputRange, maxArgc, factorCount = 4, maximumRatio = 2.2):
         result += generateHashFunction(outputRange, argc, factors)
 
     return result
-
-print(generateHeader(16, 4))
