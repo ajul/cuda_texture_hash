@@ -10,7 +10,11 @@ from pycuda.compiler import SourceModule
 
 resolution = 512
 
-header = long_period.generateHeader(256, 4)
+header = long_period.generateHeader(256, 8)
+
+f = open('long_period_hash.h', 'w')
+f.write(header)
+f.close()
 
 body = """
 extern "C"
