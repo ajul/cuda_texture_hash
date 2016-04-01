@@ -1,4 +1,6 @@
-"""
+preamble = """/*
+Generated using https://github.com/ajul/cuda_texture_hash/tree/master/long_period .
+
 Based on Long-Period Hash Functions For Procedural Texturing
 by Ares Lagae and Philip Dutré.
 
@@ -19,6 +21,7 @@ in the number of arguments.
   lirias    = { https://lirias.kuleuven.be/handle/123456789/132312 },
   url       = { http://www.vmv2006.rwth-aachen.de/ },
 }
+*/
 """
 
 import fractions
@@ -110,7 +113,7 @@ def generateHeader(outputRange, maxArgc = 8, factorCount = None):
     factors = selectFactors(outputRange, factorCount)
     permutations = [numpy.random.permutation(factor) for factor in
                     factors]
-    result = ''
+    result = preamble
 
     # constant section
     for permutation in permutations:

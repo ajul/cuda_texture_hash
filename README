@@ -1,0 +1,17 @@
+long_period is based on Long-Period Hash Functions For Procedural Texturing
+by Ares Lagae and Philip Dutré.
+
+@inproceedings{LD2006LHFFPT,
+  author    = { Lagae, Ares and Dutr\'e, Philip },
+  title     = { Long-Period Hash Functions For Procedural Texturing },
+  booktitle = { Vision, Modeling, and Visualization 2006 },
+  year      = { 2006 },
+  editor    = { L. Kobbelt and T. Kuhlen and T. Aach and R. Westermann },
+  pages     = { 225--228 },
+  address   = { Berlin },
+  month     = { November },
+  publisher = { Akademische Verlagsgesellschaft Aka GmbH },
+  isbn      = { 3-89838-081-5, 1-58603-688-2 },
+  lirias    = { https://lirias.kuleuven.be/handle/123456789/132312 },
+  url       = { http://www.vmv2006.rwth-aachen.de/ },
+}
