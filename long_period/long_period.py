@@ -88,7 +88,10 @@ def generateHashFunction(outputRange, argc, factors):
     
     for factorIndex, factor in enumerate(factors):
         result += '    result = result + %s;\n' % generateHashTerm(offset, factor, argc - 1)
-        offset += factor
+        if factorIndex < len(factors) - 1 and factor > outputRange:
+            offset += factors[factorIndex + 1]
+        else:
+            offset += factor
     
     result += '\n'
     
